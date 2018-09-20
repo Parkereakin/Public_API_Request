@@ -7,19 +7,18 @@ const searchDiv = document.querySelector('.search-container');
 const gallery = document.querySelector('#gallery');
 const body = document.querySelector('body');
 const newDiv = document.createElement('div');
-const cards = document.querySelectorAll('.card');
 const employeeDB = [];
 let employeeName = "";
 let employeeInfo = "";
 let index = 0;
 let active = "inactive";
+let searchVal ="";
 
 fetch('https://randomuser.me/api?results=12&nat=us')
 	.then(response => response.json())
 	.then(data => generateEmployees(data.results));
 
 function generateEmployees(data) {
-	console.log(data);
 	let galleryHTML = ""
 	for (let i=0; i<data.length; i++) {
 		galleryHTML += `
@@ -55,9 +54,11 @@ function cardClick() {
 		} else if (e.target.className === 'modal-close-btn' || e.target.textContent === 'X') {
 			document.querySelector('.modal-container').remove();
 			active = "inactive";
+			document.querySelector('#search-input').value = searchVal;
 		}  else if (e.target.className === 'modal-container') {
 			document.querySelector('.modal-container').remove();
 			active = "inactive";
+			document.querySelector('#search-input').value = searchVal;
 		}  else if (e.target.className === 'modal') {
 			e.preventDefault();
 		} else if (e.target.className === 'modal-prev btn') {
@@ -111,8 +112,8 @@ function buildEmployeeDB(data) {
 	let year = dob.split('-')[0].substr(2, 2);
 	let month = dob.split('-')[1];
 	let day = dob.split('-')[2];
-	let phone = data.phone;
-	phone = `${phone.split('-')[0]} ${phone.split('-')[1]}-${phone.split('-')[2]}`;
+	let phone = data.phone.split('-');
+	phone = `${phone[0]} ${phone[1]}-${phone[2]}`;
 	employeeDB.push({
 		"photo" : data.picture.large,
 		"fName" : data.name.first,
@@ -168,15 +169,51 @@ function buildModal(employeeID) {
 
 
 
-/*
-// Search markup:
-<form action="#" method="get">
-    <input type="search" id="search-input" class="search-input" placeholder="Search...">
-    <input type="submit" value="&#x1F50D;" id="serach-submit" class="search-submit">
-</form>
-
-searchDiv.append();
-*/
+function addSearch() {
+	let search = "";
+	search += `
+			<form action="#" method="get">
+			    <input type="search" id="search-input" class="search-input" placeholder="Search...">
+			    <input type="submit" value="&#x1F50D;" id="serach-submit" class="search-submit">
+			</form>
+	`;
+	searchDiv.innerHTML = search;
+	document.addEventListener("click", (e) => {
+		if (e.target.className === 'search-submit') {
+			e.preventDefault();
+		}
+	});
+	document.addEventListener("input", (e) => {
+		const cards = document.querySelector('.gallery').children;
+		if (e.target.tagName === 'INPUT' && e.target.value != "") {
+			for (let i = 0; i < cards.length; i++ ) {
+				let name = cards[i];
+				console.log(name);
+				let childElements = name.children;
+				console.log(childElements);
+				for (let i=0; i<childElements.length; i++) {
+					if (childElements[i].className === 'card-info-container') {
+						cardName = childElements[i].firstElementChild.textContent;
+						console.log(cardName);
+						if (cardName.includes(e.target.value) === true) {
+							name.style.display = 'flex';
+						} else {
+							name.style.display = 'none';
+						}
+					}
+				}
+			}
+		} else {
+			for (let i = 0; i < cards.length; i++ ) {
+				let name = cards[i];
+				name.style.display = 'flex';
+			}
+		}
+		searchVal = e.target.value;
+		console.log(searchVal);
+	});
+}
+addSearch();
 
 
 
