@@ -14,11 +14,12 @@ let employeeInfo = "";
 let index = 0;
 let active = "inactive";
 
-fetch('https://randomuser.me/api?results=12')
+fetch('https://randomuser.me/api?results=12&nat=us')
 	.then(response => response.json())
 	.then(data => generateEmployees(data.results));
 
 function generateEmployees(data) {
+	console.log(data);
 	let galleryHTML = ""
 	for (let i=0; i<data.length; i++) {
 		galleryHTML += `
@@ -98,8 +99,6 @@ function cardClick() {
 					index += 1;
 				}
 				buildModal(employeeDB[index]);
-			} else {
-				e.preventDefault();	
 			}
 		}
 	});
@@ -112,13 +111,15 @@ function buildEmployeeDB(data) {
 	let year = dob.split('-')[0].substr(2, 2);
 	let month = dob.split('-')[1];
 	let day = dob.split('-')[2];
+	let phone = data.phone;
+	phone = `${phone.split('-')[0]} ${phone.split('-')[1]}-${phone.split('-')[2]}`;
 	employeeDB.push({
 		"photo" : data.picture.large,
 		"fName" : data.name.first,
 		"lName" : data.name.last,
 		"name" : `${data.name.first} ${data.name.last}`,
 		"email" : data.email,
-		"phone" : data.phone,
+		"phone" : phone,
 		"street" : data.location.street,
 		"city" : data.location.city,
 		"state" : data.location.state,
@@ -150,7 +151,7 @@ function buildModal(employeeID) {
 		            <p class="modal-text cap">${employeeID.city}</p>
 		            <hr>
 		            <p class="modal-text">${employeeID.phone}</p>
-		            <p class="modal-text">${employeeID.street}, ${employeeID.city}, ${employeeID.state} ${employeeID.zip}</p>
+		            <p class="modal-text" style="text-transform: capitalize;">${employeeID.street}, ${employeeID.city}, ${employeeID.state} ${employeeID.zip}</p>
 		            <p class="modal-text">Birthday: ${employeeID.birthday}</p>
 		        </div>
 		    </div>
