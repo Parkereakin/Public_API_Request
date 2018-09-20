@@ -29,7 +29,7 @@ function generateEmployees(data) {
 				<div class="card-info-container">
 					<h3 id="name" class="card-name cap">${data[i].name.first} ${data[i].name.last}</h3>
 					<p class="card-text">${data[i].email}</p>
-					<p class="card-text cap">${data[i].location.city}, ${data[i].location.state}</p>
+					<p class="card-text cap">${data[i].location.city}</p>
 				</div>
 			</div>
 		`;
@@ -165,6 +165,7 @@ function buildModal(employeeID) {
 		</div>
 	`;
 	document.querySelector('body').innerHTML += modal;
+	backgroundGradient();
 }
 
 
@@ -215,9 +216,31 @@ function addSearch() {
 }
 addSearch();
 
+// The getRgb1 and getRgb2 functions get random numbers to create random rgb colors, and returns rgb colors
+function getRgb1() {
+	const red = Math.floor((Math.random() * 255) + 1 );
+	const green = Math.floor((Math.random() * 255) + 1 );
+	const blue = Math.floor((Math.random() * 255) + 1 );
+	const rgb1 = `rgb(${red}, ${green}, ${blue})`;
+	return rgb1;
+}
+function getRgb2() {
+	const red2 = Math.floor((Math.random() * 255) + 1 );
+	const green2 = Math.floor((Math.random() * 255) + 1 );
+	const blue2 = Math.floor((Math.random() * 255) + 1 );
+	const rgb2 = `rgb(${red2}, ${green2},${blue2})`;
+	return rgb2;
+}
 
 
-
-
-
+// The backgroundGradient funtion loads the rgb values from getRgb1 and getRgb2, creates a gradient, and changes the modals background color
+function backgroundGradient() {
+	const rgb1 = getRgb1();
+	const rgb2 = getRgb2();
+	const backgroundColor = `linear-gradient(to bottom right, ${rgb1}, ${rgb2})`;
+	document.querySelector('.modal').style.backgroundImage = backgroundColor;
+	document.querySelector('.modal-btn-container').style.backgroundColor = rgb2;
+	document.querySelector('.modal-img').style.border = `2px solid ${rgb2}`;
+	document.querySelector('.modal-img').style.boxShadow = `-3px -2px 0px ${rgb2}`;
+}
 
