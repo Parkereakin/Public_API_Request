@@ -7,7 +7,12 @@ const searchDiv = document.querySelector('.search-container');
 const gallery = document.querySelector('#gallery');
 const body = document.querySelector('body');
 const newDiv = document.createElement('div');
+const cards = document.querySelectorAll('.card');
 const employeeDB = [];
+let employeeName = "";
+let employeeInfo = "";
+let index = 0;
+let active = "inactive";
 
 fetch('https://randomuser.me/api?results=12')
 	.then(response => response.json())
@@ -29,12 +34,84 @@ function generateEmployees(data) {
 			</div>
 		`;
 		document.querySelector('#gallery').innerHTML = galleryHTML;
-		buildEmployeeDB(data[i])
+		buildEmployeeDB(data[i]);
 	}
 } 
 
+function cardClick() {
+	document.addEventListener('click', (e) => {
+		if (e.target.className === 'card' || e.target.parentNode.className === 'card' || e.target.parentNode.parentNode.className === 'card') {
+			if (active === 'inactive') {
+				let employee = e.target.closest('.card');
+				let children = employee.children;
+				for (let i=0; i<children.length; i++) {
+					if (children[i].className === 'card-info-container') {
+						employeeName = children[i].firstElementChild.textContent;
+					}
+				}
+			}
+			getEmployeeInfo(employeeName);
+		} else if (e.target.className === 'modal-close-btn' || e.target.textContent === 'X') {
+			document.querySelector('.modal-container').remove();
+			active = "inactive";
+		}  else if (e.target.className === 'modal-container') {
+			document.querySelector('.modal-container').remove();
+			active = "inactive";
+		}  else if (e.target.className === 'modal') {
+			e.preventDefault();
+		} else if (e.target.className === 'modal-prev btn') {
+			document.querySelector('.modal-container').remove();
+			if (index <= 0) {
+				index = employeeDB.length - 1;
+			} else {
+				index -= 1;
+			}
+			buildModal(employeeDB[index]);
+		} else if (e.target.className === 'modal-next btn') {
+			document.querySelector('.modal-container').remove();
+			if (index >= employeeDB.length - 1) {
+				index = 0;
+			} else {
+				index += 1;
+			}
+			buildModal(employeeDB[index]);
+		}
+	});
+	// Add keyboard functionality using keypress events
+	document.addEventListener('keydown', function(e){
+		if (active === 'inactive') {
+			
+		} else {
+			if (e.key === 'ArrowLeft') {
+				document.querySelector('.modal-container').remove();
+				if (index <= 0) {
+					index = employeeDB.length - 1;
+				} else {
+					index -= 1;
+				}
+				buildModal(employeeDB[index]);
+			} else if (e.key === 'ArrowRight') {
+				document.querySelector('.modal-container').remove();
+				if (index >= employeeDB.length - 1) {
+					index = 0;
+				} else {
+					index += 1;
+				}
+				buildModal(employeeDB[index]);
+			} else {
+				e.preventDefault();	
+			}
+		}
+	});
+}
+cardClick();
 
 function buildEmployeeDB(data) {
+	let dob = data.dob.date;
+	dob = dob.split('T')[0];
+	let year = dob.split('-')[0].substr(2, 2);
+	let month = dob.split('-')[1];
+	let day = dob.split('-')[2];
 	employeeDB.push({
 		"photo" : data.picture.large,
 		"fName" : data.name.first,
@@ -46,9 +123,49 @@ function buildEmployeeDB(data) {
 		"city" : data.location.city,
 		"state" : data.location.state,
 		"zip" : data.location.postcode,
-		"birthday" : data.dob.date
+		"birthday" : `${month}/${day}/${year}`
 	});
 }
+
+function getEmployeeInfo(employeeName) {
+	for (let i=0; i<employeeDB.length; i++) {
+		if (employeeName === employeeDB[i].name) {
+			index = i;
+		}
+	}
+	buildModal(employeeDB[index]);
+}
+
+function buildModal(employeeID) {
+	active = "active";
+	let modal = "";
+	modal += `
+		<div class="modal-container">
+		    <div class="modal">
+		        <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
+		        <div class="modal-info-container">
+		            <img class="modal-img" src="${employeeID.photo}" alt="profile picture">
+		            <h3 id="name" class="modal-name cap">${employeeID.name}</h3>
+		            <p class="modal-text">${employeeID.email}</p>
+		            <p class="modal-text cap">${employeeID.city}</p>
+		            <hr>
+		            <p class="modal-text">${employeeID.phone}</p>
+		            <p class="modal-text">${employeeID.street}, ${employeeID.city}, ${employeeID.state} ${employeeID.zip}</p>
+		            <p class="modal-text">Birthday: ${employeeID.birthday}</p>
+		        </div>
+		    </div>
+
+		    // IMPORTANT: if you're not going for exceeds 
+		    <div class="modal-btn-container">
+		        <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
+		        <button type="button" id="modal-next" class="modal-next btn">Next</button>
+		    </div>
+		</div>
+	`;
+	document.querySelector('body').innerHTML += modal;
+}
+
+
 
 /*
 // Search markup:
@@ -59,37 +176,6 @@ function buildEmployeeDB(data) {
 
 searchDiv.append();
 */
-
-
-
-/*
-// Modal markup:
-
-<div class="modal-container">
-    <div class="modal">
-        <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
-        <div class="modal-info-container">
-            <img class="modal-img" src="https://placehold.it/125x125" alt="profile picture">
-            <h3 id="name" class="modal-name cap">name</h3>
-            <p class="modal-text">email</p>
-            <p class="modal-text cap">city</p>
-            <hr>
-            <p class="modal-text">(555) 555-5555</p>
-            <p class="modal-text">123 Portland Ave., Portland, OR 97204</p>
-            <p class="modal-text">Birthday: 10/21/2015</p>
-        </div>
-    </div>
-
-    // IMPORTANT: if you're not going for exceeds 
-    <div class="modal-btn-container">
-        <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
-        <button type="button" id="modal-next" class="modal-next btn">Next</button>
-    </div>
-</div>
-
-body.append();
-*/
-
 
 
 
