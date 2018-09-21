@@ -13,6 +13,7 @@ let employeeInfo = "";
 let index = 0;
 let active = "inactive";
 let searchVal ="";
+let filteredSearchDB;
 
 fetch('https://randomuser.me/api?results=12&nat=us')
 	.then(response => response.json())
@@ -63,20 +64,31 @@ function cardClick() {
 			e.preventDefault();
 		} else if (e.target.className === 'modal-prev btn') {
 			document.querySelector('.modal-container').remove();
+			showInSearch = employeeDB.filter(person => person.searchShow === true );
+			console.log(showInSearch);
 			if (index <= 0) {
-				index = employeeDB.length - 1;
+				console.log(index);
+				index = showInSearch.length - 1;
+				console.log(index);
+
 			} else {
 				index -= 1;
+				console.log(showInSearch);
 			}
-			buildModal(employeeDB[index]);
+			buildModal(showInSearch[index]);
 		} else if (e.target.className === 'modal-next btn') {
 			document.querySelector('.modal-container').remove();
-			if (index >= employeeDB.length - 1) {
+			showInSearch = employeeDB.filter(person => person.searchShow === true );
+			console.log(showInSearch);
+			if (index >= showInSearch.length - 1) {
+				console.log(index);
 				index = 0;
+				console.log(index);
 			} else {
 				index += 1;
+				console.log(index);
 			}
-			buildModal(employeeDB[index]);
+			buildModal(showInSearch[index]);
 		}
 	});
 	// Add keyboard functionality using keypress events
@@ -86,20 +98,34 @@ function cardClick() {
 		} else {
 			if (e.key === 'ArrowLeft') {
 				document.querySelector('.modal-container').remove();
+				showInSearch = employeeDB.filter(person => person.searchShow === true );
+			console.log(showInSearch);
 				if (index <= 0) {
-					index = employeeDB.length - 1;
+				console.log(index);
+					index = showInSearch.length - 1;
+				console.log(index);
 				} else {
 					index -= 1;
+				console.log(index);
 				}
-				buildModal(employeeDB[index]);
+				buildModal(showInSearch[index]);
 			} else if (e.key === 'ArrowRight') {
 				document.querySelector('.modal-container').remove();
-				if (index >= employeeDB.length - 1) {
+				showInSearch = employeeDB.filter(person => person.searchShow === true );
+			console.log(showInSearch);
+				if (index >= showInSearch.length - 1) {
+				console.log(index);
 					index = 0;
+				console.log(index);
 				} else {
 					index += 1;
+				console.log(index);
 				}
-				buildModal(employeeDB[index]);
+				buildModal(showInSearch[index]);
+			} else if (e.key === 'Escape') {
+				document.querySelector('.modal-container').remove();
+				active = "inactive";
+				document.querySelector('#search-input').value = searchVal;
 			}
 		}
 	});
@@ -125,7 +151,8 @@ function buildEmployeeDB(data) {
 		"city" : data.location.city,
 		"state" : data.location.state,
 		"zip" : data.location.postcode,
-		"birthday" : `${month}/${day}/${year}`
+		"birthday" : `${month}/${day}/${year}`,
+		"searchShow": true
 	});
 }
 
@@ -156,6 +183,7 @@ function buildModal(employeeID) {
 		            <p class="modal-text">Birthday: ${employeeID.birthday}</p>
 		        </div>
 		    </div>
+
 		    // IMPORTANT: if you're not going for exceeds 
 		    <div class="modal-btn-container">
 		        <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
@@ -168,6 +196,19 @@ function buildModal(employeeID) {
 }
 
 
+function showInSearch(name, val) {
+	if (name === 'all') {
+		for (let i = 0; i < employeeDB.length; i++) {
+			employeeDB[i].searchShow = val;
+		}
+	} else {
+		for (let i = 0; i < employeeDB.length; i++) {
+			if (name === employeeDB[i].name) {
+				employeeDB[i].searchShow = val;
+			}
+		}
+	}
+}
 
 function addSearch() {
 	let search = "";
@@ -188,17 +229,16 @@ function addSearch() {
 		if (e.target.tagName === 'INPUT' && e.target.value != "") {
 			for (let i = 0; i < cards.length; i++ ) {
 				let name = cards[i];
-				console.log(name);
 				let childElements = name.children;
-				console.log(childElements);
 				for (let i=0; i<childElements.length; i++) {
 					if (childElements[i].className === 'card-info-container') {
 						cardName = childElements[i].firstElementChild.textContent;
-						console.log(cardName);
 						if (cardName.includes(e.target.value) === true) {
 							name.style.display = 'flex';
+							showInSearch(cardName, true);
 						} else {
 							name.style.display = 'none';
+							showInSearch(cardName, false);
 						}
 					}
 				}
@@ -207,13 +247,15 @@ function addSearch() {
 			for (let i = 0; i < cards.length; i++ ) {
 				let name = cards[i];
 				name.style.display = 'flex';
+				employeeDB[i].searchShow = true;
 			}
+			showInSearch('all', true);
 		}
 		searchVal = e.target.value;
-		console.log(searchVal);
 	});
 }
 addSearch();
+
 
 // The getRgb1 and getRgb2 functions get random numbers to create random rgb colors, and returns rgb colors
 function getRgb1() {
@@ -242,3 +284,20 @@ function backgroundGradient() {
 	document.querySelector('.modal-img').style.border = `2px solid ${rgb2}`;
 	document.querySelector('.modal-img').style.boxShadow = `-3px -2px 0px ${rgb2}`;
 }
+
+
+
+
+/*
+==============================
+	NOTES ON WHAT ELSE TO FIX
+
+	- add "hide" / "show" key value pair on employeeDB, 
+	  and use that to filter the modal "prev"/"next" functionality
+
+==============================
+*/
+
+
+
+
